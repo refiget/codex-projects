@@ -1,0 +1,99 @@
+{
+  // ========================
+  // Python + LSP
+  // ========================
+  "python.pythonPath": "~/venvs/nvim/bin/python",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "~/venvs/nvim/bin/black",
+  "python.formatting.blackArgs": ["--fast"],
+  "coc.preferences.formatOnSaveFiletypes": ["python"],
+  "coc.format.enable": true,
+  "[python]": { "coc.preferences.formatOnSave": true },
+
+  // ========================
+  // 补全行为与性能
+  // ========================
+  "suggest.autoTrigger": "always",
+  "suggest.enablePreselect": true,
+  "suggest.noselect": false,
+  "suggest.timeout": 500,
+  "suggest.maxCompleteItemCount": 80,
+  "suggest.detailField": "abbr",          // 仅显示缩写信息，避免详情里带仓库/URL
+  "suggest.detailMaxLength": 60,          // 截断过长的详情，减少噪声
+  "suggest.labelMaxLength": 60,           // 截断 label，避免长路径
+  "suggest.floatMaxWidth": 60,            // 浮窗宽度限制，减少长链接显示
+  "suggest.enablePreview": false,         // 关闭 PUM 预览区的长文档，保留 hover/signature
+  "suggest.triggerAfterInsertEnter": true,
+  "suggest.autoTriggerAfterTriggerCharacters": true,
+
+  // ========================
+  // PUM / UI
+  // ========================
+  "coc.preferences.floatEnable": true,
+  "coc.preferences.enableFloatHighlight": true,
+  "coc.preferences.snippetStatusText": "Ⓢ ",
+  "suggest.snippetIndicator": " ",
+  "suggest.completionItemKindLabels": {
+    "function": " ",
+    "method": " ",
+    "variable": " ",
+    "class": " ",
+    "interface": " ",
+    "module": " ",
+    "property": " ",
+    "enum": "練",
+    "enumMember": "",
+    "constant": " ",
+    "field": " ",
+    "file": " ",
+    "folder": " ",
+    "keyword": " ",
+    "snippet": " ",
+    "text": " ",
+    "value": " ",
+    "color": " ",
+    "reference": " ",
+    "unit": " ",
+    "event": " ",
+    "operator": " ",
+    "typeParameter": " "
+  },
+
+  // ========================
+  // 签名与提示
+  // ========================
+  "signature.target": "float",
+  "signature.preferShownAbove": true,
+  "signature.preferShownInSameWindow": false,
+
+  // ========================
+  // 诊断
+  // ========================
+  "diagnostic.virtualText": false,
+  "diagnostic.refreshOnInsertMode": false,
+  "diagnostic.hintSign": " ",
+  "diagnostic.infoSign": " ",
+  "diagnostic.warningSign": " ",
+  "diagnostic.errorSign": " ",
+
+  // ========================
+  // Inlay Hints 关闭
+  // ========================
+  "inlayHint.enable": false,
+  "coc.preferences.inlayHint.enable": false,
+  "pyright.inlayHints.variableTypes": false,
+  "pyright.inlayHints.functionLikeReturnTypes": false,
+  "pyright.inlayHints.parameterNames": false,
+  "pyright.inlayHints.parameterTypes": false,
+  "pyright.inlayHints.enumMemberValues": false,
+
+  // ========================
+  // coc-explorer
+  // ========================
+  "explorer.icon.enableNerdfont": true,
+  "explorer.icon.source": "nvim-web-devicons"
+}

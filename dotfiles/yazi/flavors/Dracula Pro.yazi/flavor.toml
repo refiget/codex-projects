@@ -1,0 +1,51 @@
+[flavor]
+name = "Dracula Pro"
+author = "Enhanced Dracula Theme"
+
+[manager]
+hovered = { fg = "#f8f8f2", bg = "#44475a", italic = true }
+preview = { tab_size = 2, max_width = 100 }
+marker_copied = { fg = "#282a36", bg = "#50fa7b" }
+folder_icons = { default = " ", open = " ", empty = " ", empty_open = " ", symlink = " ", symlink_open = " ", error = " " }
+[status]
+separator_open  = ""
+separator_close = ""
+separator_style = { fg = "#44475a", bg = "#44475a" }
+
+# --- 关键修复：亮色背景 + 深色文字 (#282a36) ---
+
+# Normal Mode (默认模式 - 紫色背景，黑色字)
+mode_normal = { fg = "#282a36", bg = "#bd93f9", bold = true }
+
+# Select Mode (选择模式 - 绿色背景，黑色字)
+mode_select = { fg = "#282a36", bg = "#50fa7b", bold = true }
+
+# Unset/Command Mode (命令模式 - 橙色背景，黑色字)
+mode_unset  = { fg = "#282a36", bg = "#ffb86c", bold = true }
+
+# --- 进度条与信息栏 ---
+
+# 整体背景色 (深灰，比黑色稍亮)
+container = { fg = "#f8f8f2", bg = "#44475a" }
+
+# 进度条 (例如 1/10) - 使用紫色文字
+progress_label = { fg = "#f8f8f2", bold = true }
+progress_normal = { fg = "#6272a4", bg = "#44475a" }
+progress_error  = { fg = "#ff5555", bg = "#44475a" }
+
+# 权限信息 (例如 -rw-r--r--)
+permissions_t = { fg = "#50fa7b" }
+permissions_r = { fg = "#f1fa8c" }
+permissions_w = { fg = "#ff5555" }
+permissions_x = { fg = "#8be9fd" }
+permissions_s = { fg = "#bd93f9" }
+
+[filetype]
+rules = [
+  { name = "*/", fg = "#bd93f9", bold = true, prefix = " " },
+  { name = "*.py", fg = "#50fa7b", italic = true, prefix = "󰌠 " },
+  { name = "*.js", fg = "#f1fa8c", italic = true, prefix = "󰌞 " },
+  { name = "*.lua", fg = "#50fa7b", italic = true, prefix = "󰆍 " },
+  { name = "*.md", fg = "#f1fa8c", italic = true, prefix = "󰍔 " },
+  { name = "*", fg = "#f8f8f2" }
+]

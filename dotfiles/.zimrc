@@ -1,0 +1,62 @@
+# Zim Configuration
+# ============================================================
+
+# -----------------
+# Base environment and utilities
+# -----------------
+zmodule environment
+zmodule input
+zmodule termtitle
+zmodule utility
+
+# 1. 加载 Zim 的核心补全设置 (您之前漏了这个!)
+zmodule completion
+
+# -----------------
+# Git helpers
+# (git-info is required for most prompt themes)
+# -----------------
+zmodule git
+zmodule git-info
+
+# -----------------
+# Prompt theme
+# -----------------
+# ⚠️ 注意: 确保 'magicmace' 是一个已安装的有效模块名
+# 如果这是您自己写的或第三方下载的，请确保它在 ~/.zim/modules/magicmace
+zmodule magicmace
+
+# -----------------
+# Completions (重要顺序)
+# -----------------
+
+# 2. 加载额外的补全库
+zmodule zsh-users/zsh-completions
+
+# -----------------
+# Enhancements
+# -----------------
+# Autosuggestions: gray “ghost text”
+zmodule zsh-users/zsh-autosuggestions
+
+# Fzf-tab: 使用 fzf 进行 Tab 菜单选择
+# (它依赖于上面的 zmodule completion)
+zmodule Aloxaf/fzf-tab
+
+# -----------------
+# Syntax Highlighting
+# -----------------
+# ⚠️ 警告: 这个模块必须永远放在最后!
+# 它可以接管前面所有插件的命令并进行高亮
+zmodule zdharma-continuum/fast-syntax-highlighting
+
+# -----------------
+# 依赖自检（保守提示，不改主题/功能）
+# -----------------
+if ! command -v fzf >/dev/null 2>&1; then
+  print "⚠️  未检测到 fzf，fzf-tab/相关功能不可用。Arch: pacman -S fzf；macOS: brew install fzf"
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  print "⚠️  未检测到 git，zim 模块更新/安装可能失败。"
+fi

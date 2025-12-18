@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+
+# ===== 基础 =====
+yabai -m config mouse_follows_focus          on
+yabai -m config focus_follows_mouse          off
+
+yabai -m config window_placement             second_child
+yabai -m config window_shadow                on
+
+# ===== 默认全部 float =====
+yabai -m config layout                       float
+yabai -m config auto_manage                  off
+yabai -m config auto_balance                 off
+
+
+
+# ===== 系统对话框永远 float =====
+yabai -m rule --add app="^Finder$"             manage=off
+yabai -m rule --add role="AXSystemDialog"      manage=off
+yabai -m rule --add subrole="AXDialog"         manage=off
+yabai -m rule --add subrole="AXSystemDialog"   manage=off
+
+# ===== 间距（non-SA 完全支持）=====
+yabai -m config top_padding                  12
+yabai -m config bottom_padding               12
+yabai -m config left_padding                 12
+yabai -m config right_padding                12
+yabai -m config window_gap                   10
+
+# ===== 非注入：关闭所有 SA-only 功能 =====
+yabai -m config window_animation_duration    0.00
+yabai -m config window_opacity               off
+yabai -m config window_opacity_duration      0.00
+
+echo "yabai loaded (non-SA): float default + whitelist tiling + BSP toggle ready"
+

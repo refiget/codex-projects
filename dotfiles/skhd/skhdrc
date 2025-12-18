@@ -1,0 +1,28 @@
+# 焦点切换
+alt + ctrl - h : /opt/homebrew/bin/yabai -m window --focus west
+alt + ctrl - j : /opt/homebrew/bin/yabai -m window --focus south
+alt + ctrl - k : /opt/homebrew/bin/yabai -m window --focus north
+alt + ctrl - l : /opt/homebrew/bin/yabai -m window --focus east
+
+# 窗口交换
+alt + ctrl + shift - h : /opt/homebrew/bin/yabai -m window --swap west
+alt + ctrl + shift - j : /opt/homebrew/bin/yabai -m window --swap south
+alt + ctrl + shift - k : /opt/homebrew/bin/yabai -m window --swap north
+alt + ctrl + shift - l : /opt/homebrew/bin/yabai -m window --swap east
+
+# ★ 强制 BSP（白名单自动平铺）
+alt + ctrl - b : /opt/homebrew/bin/yabai -m space --layout bsp
+
+# ★ 强制 float
+alt + ctrl - f : /opt/homebrew/bin/yabai -m space --layout float
+
+# 切换窗口 float
+alt + ctrl - c : /opt/homebrew/bin/yabai -m window --toggle float;\
+          /opt/homebrew/bin/yabai -m window --grid 50:50:1:1:48:48
+
+# 最大化（toggle zoom-fullscreen）
+alt + ctrl - m : /opt/homebrew/bin/yabai -m window --toggle zoom-fullscreen
+
+# 居中窗口
+alt + ctrl - g : /opt/homebrew/bin/yabai -m window --grid 8:8:2:2:4:4
+

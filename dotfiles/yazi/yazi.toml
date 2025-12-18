@@ -1,0 +1,37 @@
+[mgr]
+linemode = "size_and_mtime"
+show_hidden = true
+sort_by = "natural"
+show_symlink = true
+ignore_globs = [
+    ".git",
+    "node_modules",
+    ".DS_Store",
+    ".direnv",
+    ".cache",
+    "__pycache__",
+    ".pytest_cache",
+    "dist",
+    "build",
+    "target",
+    ".next",
+    ".nuxt",
+    ".turbo",
+    "*~",
+    "*.un~",
+    "*.swp",
+    "*.swo",
+]
+
+[opener]
+edit = [
+    { run = 'nvim "$@"', desc = "Edit", block = true },
+    { run = 'code "$@"', desc = "VS Code", orphan = true }
+]
+open = [
+    { run = 'open "$@"', desc = "Open", orphan = true }
+]
+
+
+[clipboard]
+copy = "pbcopy"
