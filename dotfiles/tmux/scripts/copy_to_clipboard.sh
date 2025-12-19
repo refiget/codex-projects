@@ -16,8 +16,9 @@ is_ssh_session() {
 # Keep tmux buffer in sync (and trigger set-clipboard if enabled)
 copy_via_tmux() {
   if command -v tmux >/dev/null 2>&1 && [[ -n "${TMUX:-}" ]]; then
-    tmux set-buffer -w -- "$content" 2>/dev/null || tmux set-buffer -- "$content"
-    return 0
+    if tmux set-buffer -w -- "$content" 2>/dev/null || tmux set-buffer -- "$content"; then
+      return 0
+    fi
   fi
   return 1
 }
@@ -25,26 +26,31 @@ copy_via_tmux() {
 # Platform clip helpers (local sessions)
 copy_via_host() {
   if command -v pbcopy >/dev/null 2>&1; then
-    printf '%s' "$content" | pbcopy || true
-    return 0
+    if printf '%s' "$content" | pbcopy; then
+      return 0
+    fi
   fi
   if command -v wl-copy >/dev/null 2>&1; then
-    printf '%s' "$content" | wl-copy --type text || wl-copy || true
-    return 0
+    if printf '%s' "$content" | wl-copy --type text 2>/dev/null || printf '%s' "$content" | wl-copy 2>/dev/null; then
+      return 0
+    fi
   fi
   if command -v xclip >/dev/null 2>&1; then
-    printf '%s' "$content" | xclip -selection clipboard || true
-    return 0
+    if printf '%s' "$content" | xclip -selection clipboard 2>/dev/null; then
+      return 0
+    fi
   fi
   if command -v xsel >/dev/null 2>&1; then
-    printf '%s' "$content" | xsel --clipboard --input || true
-    return 0
+    if printf '%s' "$content" | xsel --clipboard --input 2>/dev/null; then
+      return 0
+    fi
   fi
   if command -v powershell.exe >/dev/null 2>&1; then
-    powershell.exe -NoProfile -Command Set-Clipboard -Value @"
+    if powershell.exe -NoProfile -Command Set-Clipboard -Value @"
 ${content}
-"@ || true
-    return 0
+"@; then
+      return 0
+    fi
   fi
   return 1
 }
