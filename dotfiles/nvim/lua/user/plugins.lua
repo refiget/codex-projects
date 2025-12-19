@@ -108,7 +108,7 @@ local plugins = {
   { "fannheyward/coc-pyright", lazy = false },
 
   -- Treesitter / icons
-  { "nvim-treesitter/nvim-treesitter", lazy = false },
+  { "nvim-treesitter/nvim-treesitter", event = { "BufReadPost", "BufNewFile" } },
 
   -- Appearance
   {
@@ -136,7 +136,7 @@ local plugins = {
   },
   {
     "petertriho/nvim-scrollbar",
-    lazy = false,
+    event = { "BufReadPost", "BufNewFile" },
     config = function()
       local ok, scrollbar = pcall(require, "scrollbar")
       if not ok then
@@ -149,12 +149,12 @@ local plugins = {
       end
     end,
   },
-  { "HiPhish/rainbow-delimiters.nvim", lazy = false },
+  { "HiPhish/rainbow-delimiters.nvim", event = "VeryLazy" },
   { "theniceboy/eleline.vim", branch = "no-scrollbar", lazy = false },
-  { "RRethy/vim-illuminate", lazy = false },
+  { "RRethy/vim-illuminate", event = "BufReadPost" },
   {
     "NvChad/nvim-colorizer.lua",
-    lazy = false,
+    event = "VeryLazy",
     config = function()
       local ok, colorizer = pcall(require, "colorizer")
       if not ok then
@@ -173,11 +173,11 @@ local plugins = {
       })
     end,
   },
-  { "kevinhwang91/nvim-hlslens", lazy = false },
+  { "kevinhwang91/nvim-hlslens", event = "CmdlineEnter" },
   {
     "akinsho/bufferline.nvim",
     version = "*",
-    lazy = false,
+    event = "VimEnter",
     config = function()
       local ok, bufferline = pcall(require, "bufferline")
       if not ok then
@@ -199,7 +199,7 @@ local plugins = {
   },
   {
     "lewis6991/gitsigns.nvim",
-    lazy = false,
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
       local ok, gitsigns = pcall(require, "gitsigns")
       if not ok then
@@ -217,7 +217,6 @@ local plugins = {
       })
     end,
   },
-  { "ryanoasis/vim-devicons", lazy = false },
   { "weirongxu/coc-explorer", lazy = false },
   {
     "nvim-tree/nvim-web-devicons",
@@ -249,7 +248,7 @@ local plugins = {
   -- Telescope
   {
     "nvim-telescope/telescope.nvim",
-    lazy = false,
+    cmd = "Telescope",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local ok, telescope = pcall(require, "telescope")
@@ -272,14 +271,14 @@ local plugins = {
       })
     end,
   },
-  { "nvim-lua/plenary.nvim", lazy = false },
+  { "nvim-lua/plenary.nvim" },
 
   -- Editing Helpers
-  { "windwp/nvim-autopairs", lazy = false },
-  { "echasnovski/mini.surround", lazy = false },
-  { "junegunn/vim-after-object", lazy = false },
-  { "lukas-reineke/indent-blankline.nvim", lazy = false },
-  { "Vimjas/vim-python-pep8-indent", lazy = false },
+  { "windwp/nvim-autopairs", event = "InsertEnter" },
+  { "echasnovski/mini.surround", event = "VeryLazy" },
+  { "junegunn/vim-after-object", event = "VeryLazy" },
+  { "lukas-reineke/indent-blankline.nvim", event = { "BufReadPost", "BufNewFile" } },
+  { "Vimjas/vim-python-pep8-indent", ft = "python" },
 
   -- Markdown Preview (browser)
   {
@@ -304,7 +303,7 @@ local plugins = {
 }
 
 require("lazy").setup(plugins, {
-  defaults = { lazy = false },
+  defaults = { lazy = true },
   ui = { border = "rounded" },
   install = {
     missing = true,  -- 启动时自动安装缺失插件
