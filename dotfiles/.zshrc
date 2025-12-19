@@ -61,23 +61,6 @@ export PAGER="less"
 autoload -U colors && colors
 [[ $- != *i* ]] && return  # only for interactive shells
 
-# Minimal tmux mode sync (colors only, no cursor output)
-_update_tmux_mode() {
-  [[ -z "$TMUX" ]] && return
-  local mode="$1"
-  tmux set-environment -g TMUX_MODE "$mode" >/dev/null 2>&1
-  tmux run-shell -b "~/.config/tmux/scripts/update_theme_color.sh" >/dev/null 2>&1
-  tmux refresh-client -S >/dev/null 2>&1
-}
-
-_tmux_mode_sync() {
-  local km="${1:-$KEYMAP}"
-  case "$km" in
-    vicmd) _update_tmux_mode "normal" ;;
-    *)     _update_tmux_mode "insert" ;;
-  esac
-}
-
 # --- 虚拟环境获取函数 ---
 function get_venv_prompt() {
   local venv_name="base"

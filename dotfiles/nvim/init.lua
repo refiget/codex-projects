@@ -6,3 +6,4 @@ require("user.plugins")     -- 插件与插件配置
 require("user.coc").setup() -- Coc 扩展列表
 require("user.keymaps")     -- 基础按键
 require("user.snippets")    -- LuaSnip + 补全相关按键
+require("user.tmux").setup_mode_sync()  -- 将插入/普通模式同步给 tmux，驱动配色
