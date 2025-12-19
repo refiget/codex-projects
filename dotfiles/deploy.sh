@@ -13,11 +13,16 @@ CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
 OS_NAME="$(uname -s)"
 FORCE_SYNC=0
+AUTO_LAZY=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -f|--force|--sync)
             FORCE_SYNC=1
+            shift
+            ;;
+        --lazy)
+            AUTO_LAZY=1
             shift
             ;;
         *)
@@ -120,3 +125,12 @@ fi
 
 echo "---------------------------------------------"
 echo "🎉 部署完成！"
+
+if [[ "$AUTO_LAZY" -eq 1 ]]; then
+    if command -v nvim >/dev/null 2>&1; then
+        echo "⬇️  自动拉取 Neovim 插件 (lazy.nvim)..."
+        nvim --headless "+Lazy sync" +qa || echo "⚠️  lazy.nvim 拉取失败，请手动运行: nvim --headless \"+Lazy sync\" +qa"
+    else
+        echo "⚠️  未找到 nvim，跳过 lazy.nvim 插件拉取。"
+    fi
+fi

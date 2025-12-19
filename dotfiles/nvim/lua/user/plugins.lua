@@ -1,84 +1,16 @@
 local fn = vim.fn
-
-
--- ===================== Plugin Section =====================
-vim.cmd([[
-call plug#begin('$HOME/.config/nvim/plugged')
-
-" LSP / Completion
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'fannheyward/coc-pyright'
-
-" Treesitter / icons
-Plug 'nvim-treesitter/nvim-treesitter'
-Plug 'nvim-tree/nvim-web-devicons'
-		
-" === Appearance ===
-Plug 'theniceboy/nvim-deus'
-Plug 'petertriho/nvim-scrollbar'
-Plug 'HiPhish/rainbow-delimiters.nvim'
-Plug 'theniceboy/eleline.vim', { 'branch': 'no-scrollbar' }
-Plug 'RRethy/vim-illuminate'
-Plug 'NvChad/nvim-colorizer.lua'
-Plug 'kevinhwang91/nvim-hlslens'
-Plug 'nvim-tree/nvim-web-devicons'
-Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
-Plug 'lewis6991/gitsigns.nvim'
-Plug 'ryanoasis/vim-devicons'
-Plug 'weirongxu/coc-explorer'
-
-
-" === Telescope  ===
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-
-
-" === Editing Helpers ===
-Plug 'windwp/nvim-autopairs'
-Plug 'echasnovski/mini.surround'
-Plug 'junegunn/vim-after-object'
-Plug 'lukas-reineke/indent-blankline.nvim'
-Plug 'Vimjas/vim-python-pep8-indent'
-
-" === Markdown Preview (browser) ===
-" build step ensures the web app is ready; only for markdown buffers
-Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npm install', 'for': 'markdown' }
-
-" === LuaSnip ===
-Plug 'L3MON4D3/LuaSnip'
-Plug 'rafamadriz/friendly-snippets'
-
-call plug#end()
-]])
-
--- 自动检查关键插件是否缺失（类似 PlugInstall），缺失时自动运行 PlugInstall --sync
-local function ensure_core_plugins(after_install)
-  local plug_home = fn.expand("$HOME/.config/nvim/plugged")
-  local required = { "coc.nvim", "coc-pyright", "telescope.nvim", "plenary.nvim" }
-  local missing = {}
-  for _, name in ipairs(required) do
-    if fn.empty(fn.glob(plug_home .. "/" .. name)) == 1 then
-      table.insert(missing, name)
-    end
-  end
-  if #missing > 0 then
-    vim.schedule(function()
-      vim.notify(
-        "检测到缺少插件: " .. table.concat(missing, ", ") .. "，将自动执行 :PlugInstall --sync",
-        vim.log.levels.WARN,
-        { title = "Plugin install" }
-      )
-      vim.cmd("silent! PlugInstall --sync")
-      if type(after_install) == "function" then
-        after_install()
-      end
-    end)
-    return
-  end
-  if type(after_install) == "function" then
-    after_install()
-  end
+local lazypath = fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
 end
+vim.opt.rtp:prepend(lazypath)
 
 -- CoC 依赖检查：Node、npm/pnpm/yarn、python3 host
 local function check_coc_deps()
@@ -125,7 +57,9 @@ local function ensure_coc_extensions()
   if not exts or #exts == 0 then
     return
   end
-  -- Coc 官方扩展根目录
+  if fn.exists("*coc#util#extension_root") == 0 then
+    return
+  end
   local ok_root, ext_root = pcall(function()
     return fn["coc#util#extension_root"]()
   end)
@@ -134,7 +68,6 @@ local function ensure_coc_extensions()
   local missing = {}
   for _, name in ipairs(exts) do
     local path = ext_home .. "/" .. name
-    -- 认为已安装需满足：目录存在且 package.json 存在
     local exists = fn.isdirectory(path) == 1 and fn.empty(fn.glob(path .. "/package.json")) == 0
     if not exists then
       table.insert(missing, name)
@@ -149,141 +82,243 @@ local function ensure_coc_extensions()
     end)
     return
   end
-  -- 延迟一点，确保 coc.nvim 已加载；在新 tab 中执行，避免卡主当前窗口
   vim.g.__coc_extensions_installing = true
   vim.defer_fn(function()
     local list = table.concat(missing, " ")
     vim.notify("后台安装 coc 扩展: " .. list, vim.log.levels.INFO, { title = "Coc extensions" })
     vim.cmd("tabnew")
-    -- 异步安装，网络慢时不会被提前关闭
     vim.cmd("silent! CocInstall " .. list)
-    -- 返回主 tab，安装日志留在新 tab
     vim.cmd("tabprevious")
-    -- 约 10s 后清理标记，允许后续重试
     vim.defer_fn(function()
       vim.g.__coc_extensions_installing = false
     end, 10000)
   end, 500)
 end
 
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    ensure_core_plugins(function()
-      check_coc_deps()
-      ensure_coc_extensions()
-    end)
-  end,
-})
+local function trigger_coc_extension_install()
+  if vim.fn.exists("*coc#util#extension_root") == 0 then
+    return
+  end
+  ensure_coc_extensions()
+end
 
--- ===================== Telescope =====================
-pcall(function()
-  local telescope = require("telescope")
-  telescope.setup({
-    defaults = {
-      -- 轻量一点的按键，不和你现有习惯冲突
-      mappings = {
-        i = {
-          ["<C-j>"] = "move_selection_next",
-          ["<C-k>"] = "move_selection_previous",
+local plugins = {
+  -- LSP / Completion
+  { "neoclide/coc.nvim", branch = "release", lazy = false },
+  { "fannheyward/coc-pyright", lazy = false },
+
+  -- Treesitter / icons
+  { "nvim-treesitter/nvim-treesitter", lazy = false },
+
+  -- Appearance
+  {
+    "theniceboy/nvim-deus",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.opt.termguicolors = true
+      vim.cmd("silent! colorscheme deus")
+      vim.api.nvim_set_hl(0, "NonText", { fg = "grey10" })
+      vim.g.rainbow_active = 1
+      vim.g.Illuminate_delay = 750
+      vim.api.nvim_set_hl(0, "illuminatedWord", { undercurl = true })
+      vim.g.lightline = {
+        active = {
+          left = {
+            { "mode", "paste" },
+            { "readonly", "filename", "modified" },
+          },
         },
-        n = {
-          ["j"] = "move_selection_next",
-          ["k"] = "move_selection_previous",
-        },
-      },
-    },
-  })
-end)
--- ===================== UI / Appearance =====================
-
-vim.opt.termguicolors = true
-vim.cmd("silent! colorscheme deus")
-
-vim.api.nvim_set_hl(0, "NonText", { fg = "grey10" })
-vim.g.rainbow_active = 1
-vim.g.Illuminate_delay = 750
-vim.api.nvim_set_hl(0, "illuminatedWord", { undercurl = true })
-
-vim.g.lightline = {
-  active = {
-    left = {
-      { 'mode', 'paste' },
-      { 'readonly', 'filename', 'modified' },
-    },
+      }
+      vim.g.eleline_colorscheme = "deus"
+      vim.g.eleline_powerline_fonts = 0
+    end,
   },
+  {
+    "petertriho/nvim-scrollbar",
+    lazy = false,
+    config = function()
+      local ok, scrollbar = pcall(require, "scrollbar")
+      if not ok then
+        return
+      end
+      scrollbar.setup()
+      local ok_search, search = pcall(require, "scrollbar.handlers.search")
+      if ok_search then
+        search.setup()
+      end
+    end,
+  },
+  { "HiPhish/rainbow-delimiters.nvim", lazy = false },
+  { "theniceboy/eleline.vim", branch = "no-scrollbar", lazy = false },
+  { "RRethy/vim-illuminate", lazy = false },
+  {
+    "NvChad/nvim-colorizer.lua",
+    lazy = false,
+    config = function()
+      local ok, colorizer = pcall(require, "colorizer")
+      if not ok then
+        return
+      end
+      colorizer.setup({
+        filetypes = { "*" },
+        user_default_options = {
+          RGB = true,
+          RRGGBB = true,
+          names = true,
+          AARRGGBB = true,
+          mode = "virtualtext",
+          virtualtext = "■",
+        },
+      })
+    end,
+  },
+  { "kevinhwang91/nvim-hlslens", lazy = false },
+  {
+    "akinsho/bufferline.nvim",
+    version = "*",
+    lazy = false,
+    config = function()
+      local ok, bufferline = pcall(require, "bufferline")
+      if not ok then
+        return
+      end
+      bufferline.setup({
+        options = {
+          mode = "tabs",
+          numbers = "ordinal",
+          diagnostics = "coc",
+          separator_style = "slant",
+          show_close_icon = false,
+          show_buffer_close_icons = false,
+          color_icons = true,
+          always_show_bufferline = true,
+        },
+      })
+    end,
+  },
+  {
+    "lewis6991/gitsigns.nvim",
+    lazy = false,
+    config = function()
+      local ok, gitsigns = pcall(require, "gitsigns")
+      if not ok then
+        return
+      end
+      gitsigns.setup({
+        signs = {
+          add = { hl = "GitSignsAdd", text = "▎", numhl = "GitSignsAddNr", linehl = "GitSignsAddLn" },
+          change = { hl = "GitSignsChange", text = "░", numhl = "GitSignsChangeNr", linehl = "GitSignsChangeLn" },
+          delete = { hl = "GitSignsDelete", text = "_", numhl = "GitSignsDeleteNr", linehl = "GitSignsDeleteLn" },
+          topdelete = { hl = "GitSignsDelete", text = "▔", numhl = "GitSignsDeleteNr", linehl = "GitSignsDeleteLn" },
+          changedelete = { hl = "GitSignsChange", text = "▒", numhl = "GitSignsChangeNr", linehl = "GitSignsChangeLn" },
+          untracked = { hl = "GitSignsAdd", text = "┆", numhl = "GitSignsAddNr", linehl = "GitSignsAddLn" },
+        },
+      })
+    end,
+  },
+  { "ryanoasis/vim-devicons", lazy = false },
+  { "weirongxu/coc-explorer", lazy = false },
+  {
+    "nvim-tree/nvim-web-devicons",
+    lazy = false,
+    config = function()
+      local ok, devicons = pcall(require, "nvim-web-devicons")
+      if not ok then
+        return
+      end
+      devicons.setup({
+        color_icons = true,
+        default = true,
+        override = {
+          folder = { icon = "", color = "#bd93f9", name = "folder" },
+          folder_open = { icon = "", color = "#bd93f9", name = "folder_open" },
+          default_icon = { icon = "", color = "#bd93f9", name = "folder" },
+        },
+      })
+      local purple = "#bd93f9"
+      local hl = vim.api.nvim_set_hl
+      hl(0, "CocExplorerFolderIcon", { fg = purple })
+      hl(0, "CocExplorerFileDirectory", { fg = purple })
+      hl(0, "CocExplorerFileDirectoryHidden", { fg = purple })
+      hl(0, "CocExplorerSymbolicLink", { fg = purple })
+      hl(0, "CocExplorerSymbolicLinkTarget", { fg = purple })
+    end,
+  },
+
+  -- Telescope
+  {
+    "nvim-telescope/telescope.nvim",
+    lazy = false,
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local ok, telescope = pcall(require, "telescope")
+      if not ok then
+        return
+      end
+      telescope.setup({
+        defaults = {
+          mappings = {
+            i = {
+              ["<C-j>"] = "move_selection_next",
+              ["<C-k>"] = "move_selection_previous",
+            },
+            n = {
+              ["j"] = "move_selection_next",
+              ["k"] = "move_selection_previous",
+            },
+          },
+        },
+      })
+    end,
+  },
+  { "nvim-lua/plenary.nvim", lazy = false },
+
+  -- Editing Helpers
+  { "windwp/nvim-autopairs", lazy = false },
+  { "echasnovski/mini.surround", lazy = false },
+  { "junegunn/vim-after-object", lazy = false },
+  { "lukas-reineke/indent-blankline.nvim", lazy = false },
+  { "Vimjas/vim-python-pep8-indent", lazy = false },
+
+  -- Markdown Preview (browser)
+  {
+    "iamcco/markdown-preview.nvim",
+    lazy = false,
+    build = "cd app && npm install",
+    ft = { "markdown" },
+    init = function()
+      vim.g.mkdp_auto_start = 0
+      vim.g.mkdp_auto_close = 1
+      vim.g.mkdp_refresh_slow = 0
+      vim.g.mkdp_command_for_global = 0
+      vim.g.mkdp_open_to_the_world = 0
+      vim.g.mkdp_filetypes = { "markdown" }
+      vim.g.mkdp_browser = ""
+    end,
+  },
+
+  -- LuaSnip
+  { "L3MON4D3/LuaSnip", lazy = false },
+  { "rafamadriz/friendly-snippets", lazy = false },
 }
 
--- ===================== Plugin Configurations =====================
+require("lazy").setup(plugins, {
+  defaults = { lazy = false },
+  ui = { border = "rounded" },
+  install = {
+    missing = true,  -- 启动时自动安装缺失插件
+  },
+})
 
-pcall(function()
-  require("scrollbar").setup()
-  require("scrollbar.handlers.search").setup()
-end)
-
-pcall(function()
-  require("colorizer").setup({
-    filetypes = { "*" },
-    user_default_options = {
-      RGB = true,
-      RRGGBB = true,
-      names = true,
-      AARRGGBB = true,
-      mode = "virtualtext",
-      virtualtext = "■",
-    },
-  })
-end)
-
-pcall(function()
-  require("nvim-web-devicons").setup({
-    color_icons = true,
-    default = true,
-    override = {
-      folder = { icon = "", color = "#bd93f9", name = "folder" },
-      folder_open = { icon = "", color = "#bd93f9", name = "folder_open" },
-      default_icon = { icon = "", color = "#bd93f9", name = "folder" },
-    },
-  })
-  -- 让 coc-explorer 文件夹图标颜色与 Yazi Dracula Pro 一致
-  local purple = "#bd93f9"
-  local hl = vim.api.nvim_set_hl
-  hl(0, "CocExplorerFolderIcon", { fg = purple })
-  hl(0, "CocExplorerFileDirectory", { fg = purple })
-  hl(0, "CocExplorerFileDirectoryHidden", { fg = purple })
-  hl(0, "CocExplorerSymbolicLink", { fg = purple })
-  hl(0, "CocExplorerSymbolicLinkTarget", { fg = purple })
-end)
-
--- markdown-preview.nvim 默认浏览器行为与构建配置
-vim.g.mkdp_auto_start = 0          -- 不自动打开
-vim.g.mkdp_auto_close = 1          -- 关闭预览时关闭浏览器页
-vim.g.mkdp_refresh_slow = 0
-vim.g.mkdp_command_for_global = 0
-vim.g.mkdp_open_to_the_world = 0
-vim.g.mkdp_filetypes = { "markdown" }
--- macOS: 使用系统默认浏览器；如需指定，设置 mkdp_browser 或 mkdp_browserfunc
-vim.g.mkdp_browser = ""            -- 空 = 默认浏览器
-
--- xtabline 配置：tabs/buffers 模式，不启用默认映射
--- ===================== Final tweaks =====================
-vim.opt.re = 0
-vim.cmd("nohlsearch")
-vim.g.eleline_colorscheme = 'deus'
-vim.g.eleline_powerline_fonts = 0
-
-
--- =============================
--- Safe rainbow delimiter colors
--- =============================
-local soft = "#88c0a0"   -- 散光友好颜色
-
+local soft = "#88c0a0"
 vim.g.rainbow_conf = {
   guifgs = {
-    "#ff5555",  -- red
-    "#f1fa8c",  -- yellow
-    soft,       -- blue → 柔和青绿
-    "#bd93f9",  -- purple
-    "#50fa7b",  -- green
+    "#ff5555",
+    "#f1fa8c",
+    soft,
+    "#bd93f9",
+    "#50fa7b",
   },
   ctermfgs = { "Red", "Yellow", "Green", "Cyan", "Magenta" },
 }
@@ -301,39 +336,32 @@ pcall(function()
 
   configs.setup({
     ensure_installed = {
-      "lua","vim","markdown","markdown_inline","python","json","bash","javascript","c"
+      "lua", "vim", "markdown", "markdown_inline", "python", "json", "bash", "javascript", "c",
     },
     highlight = { enable = true },
     indent = { enable = true },
   })
 end)
 
-pcall(function()
-  require('gitsigns').setup({
-    signs = {
-      add          = { hl = 'GitSignsAdd'   , text = '▎', numhl='GitSignsAddNr'   , linehl='GitSignsAddLn'    },
-      change       = { hl = 'GitSignsChange', text = '░', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn' },
-      delete       = { hl = 'GitSignsDelete', text = '_', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn' },
-      topdelete    = { hl = 'GitSignsDelete', text = '▔', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn' },
-      changedelete = { hl = 'GitSignsChange', text = '▒', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn' },
-      untracked    = { hl = 'GitSignsAdd'   , text = '┆', numhl='GitSignsAddNr'   , linehl='GitSignsAddLn'    },
-    },
-  })
-end)
--- ========================
--- Bufferline (Beautiful Tabs)
--- ========================
-pcall(function()
-  require("bufferline").setup({
-    options = {
-      mode = "tabs",          -- 只显示真实 tab，避免 buffer 残留
-      numbers = "ordinal",
-      diagnostics = "coc",   -- 你用 coc.nvim，所以这里用 coc
-      separator_style = "slant", -- "slant" | "padded_slant" | "thick" | "thin"
-      show_close_icon = false,
-      show_buffer_close_icons = false,
-      color_icons = true,
-      always_show_bufferline = true,
-    }
-  })
-end)
+local aug = vim.api.nvim_create_augroup("UserCocInstall", { clear = true })
+vim.api.nvim_create_autocmd("User", {
+  group = aug,
+  pattern = "LazyDone",
+  callback = function()
+    check_coc_deps()
+    vim.defer_fn(trigger_coc_extension_install, 500)
+  end,
+})
+vim.api.nvim_create_autocmd("User", {
+  group = aug,
+  pattern = "CocNvimInit",
+  callback = function()
+    vim.defer_fn(trigger_coc_extension_install, 200)
+  end,
+})
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = aug,
+  callback = function()
+    vim.defer_fn(trigger_coc_extension_install, 1000)
+  end,
+})
