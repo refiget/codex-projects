@@ -81,9 +81,19 @@ vim.keymap.set("i", "<C-Space>", "coc#refresh()", { silent = true, noremap = tru
 vim.opt.clipboard = ""
 -- 统一剪贴板：tmux -> 系统工具 -> OSC52（远程也能回传本地剪贴板）
 do
-  local copy = vim.fn.expand("~/.config/tmux/scripts/copy_to_clipboard.sh")
-  local paste = vim.fn.expand("~/.config/tmux/scripts/paste_from_clipboard.sh")
-  if vim.fn.executable(copy) == 1 and vim.fn.executable(paste) == 1 then
+  local function first_exec(paths)
+    for _, p in ipairs(paths) do
+      local expanded = vim.fn.expand(p)
+      if vim.fn.executable(expanded) == 1 then
+        return expanded
+      end
+    end
+  end
+
+  local copy = first_exec({ "~/.config/tmux/scripts/copy_to_clipboard.sh", "~/dotfiles/tmux/scripts/copy_to_clipboard.sh" })
+  local paste = first_exec({ "~/.config/tmux/scripts/paste_from_clipboard.sh", "~/dotfiles/tmux/scripts/paste_from_clipboard.sh" })
+
+  if copy and paste then
     vim.g.clipboard = {
       name = "tmux-osc52",
       copy = { ["+"] = copy, ["*"] = copy },
