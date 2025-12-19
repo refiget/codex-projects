@@ -175,6 +175,11 @@ bindkey '^[[4~' end-of-line
 # ============================================================
 # Tmux mode sync (colors only; no cursor output)
 # ============================================================
+if [[ -n "$TMUX" ]]; then
+  tmux set-environment -g TMUX_MODE insert >/dev/null 2>&1
+  tmux run-shell -b "~/.config/tmux/scripts/update_theme_color.sh" >/dev/null 2>&1
+fi
+
 _tmux_mode_sync() {
   [[ -z "$TMUX" ]] && return
   local km="${1:-$KEYMAP}"
