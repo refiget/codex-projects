@@ -12,6 +12,20 @@ DOTFILES_DIR="$SCRIPT_DIR"
 CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
 OS_NAME="$(uname -s)"
+FORCE_SYNC=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force|--sync)
+            FORCE_SYNC=1
+            shift
+            ;;
+        *)
+            echo "未知参数: $1"
+            exit 1
+            ;;
+    esac
+done
 
 mkdir -p "$CONFIG_DIR"
 mkdir -p "$BACKUP_DIR"
@@ -39,12 +53,17 @@ link_file() {
         fi
     fi
 
-    # 3. 如果目标存在，则备份
+    # 3. 如果目标存在，则备份或强制覆盖
     if [ -e "$DEST" ] || [ -L "$DEST" ]; then
-        local TS
-        TS=$(date +%s)
-        echo "🔄 备份冲突: $DEST -> $BACKUP_DIR/${FILENAME}_${TS}"
-        mv "$DEST" "$BACKUP_DIR/${FILENAME}_${TS}"
+        if [[ "$FORCE_SYNC" -eq 1 ]]; then
+            echo "♻️  覆盖已存在的目标（force sync）: $DEST"
+            rm -rf "$DEST"
+        else
+            local TS
+            TS=$(date +%s)
+            echo "🔄 备份冲突: $DEST -> $BACKUP_DIR/${FILENAME}_${TS}"
+            mv "$DEST" "$BACKUP_DIR/${FILENAME}_${TS}"
+        fi
     fi
 
     # 4. 建立连接
