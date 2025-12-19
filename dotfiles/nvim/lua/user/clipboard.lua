@@ -65,8 +65,16 @@ local paste = first_exec({ "~/.config/tmux/scripts/paste_from_clipboard.sh", "~/
 
 local has_builtin_osc52 = vim.ui and vim.ui.clipboard and vim.ui.clipboard.osc52
 
-if has_builtin_osc52 then
-  -- 优先使用 Neovim 内置 OSC52 提供者（0.10+），终端需支持 OSC52
+if copy and paste then
+  -- 优先：tmux 脚本（支持 pbcopy/xclip/PowerShell + OSC52，且同步 tmux buffer）
+  vim.g.clipboard = {
+    name = "tmux-osc52",
+    copy = { ["+"] = copy, ["*"] = copy },
+    paste = { ["+"] = paste, ["*"] = paste },
+    cache_enabled = 0,
+  }
+elseif has_builtin_osc52 then
+  -- 其次：Neovim 内置 OSC52（0.10+）
   vim.g.clipboard = {
     name = "osc52",
     copy = {
@@ -77,13 +85,6 @@ if has_builtin_osc52 then
       ["+"] = vim.ui.clipboard.osc52.paste("+"),
       ["*"] = vim.ui.clipboard.osc52.paste("*"),
     },
-    cache_enabled = 0,
-  }
-elseif copy and paste then
-  vim.g.clipboard = {
-    name = "tmux-osc52",
-    copy = { ["+"] = copy, ["*"] = copy },
-    paste = { ["+"] = paste, ["*"] = paste },
     cache_enabled = 0,
   }
 else

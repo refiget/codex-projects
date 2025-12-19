@@ -22,10 +22,10 @@ status_bg=$(tmux show -gqv status-bg)
 # Keep segments on the terminal background to avoid color blocks on transparent themes
 segment_bg="$status_bg"
 segment_fg=$(tmux show -gqv '@status_fg')
-[[ -z "$segment_fg" ]] && segment_fg="#f1fa8c"
-# 固定时间段为 Dracula 黄，背景透明，避免模式切换色块不同步
+[[ -z "$segment_fg" ]] && segment_fg="#ffb86c"  # 橙色前景
+# 固定时间段为橙色，背景透明
 host_bg="$status_bg"
-host_fg="#f1fa8c"
+host_fg="#ffb86c"
 time_fmt="${TMUX_TIME_FMT:-%H:%M %a %m-%d}"
 separator=""
 right_cap=""
@@ -60,7 +60,7 @@ host_connector_bg="$status_bg"
 if [[ -n "$rainbarf_segment" ]]; then
   host_connector_bg="$rainbarf_bg"
 fi
-host_prefix=$(printf '#[fg=%s,bg=%s]%s#[fg=%s,bg=%s]' \
+host_prefix=$(printf '#[fg=%s,bg=%s,bold]%s#[fg=%s,bg=%s]' \
   "$host_fg" "$host_bg" "$time_text" \
   "$host_bg" "$status_bg")
 
