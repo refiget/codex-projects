@@ -13,6 +13,43 @@ is_ssh_session() {
   [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_TTY:-}" ]]
 }
 
+resolve_tty() {
+  local cand
+
+  if [[ -n "${TTY:-}" && -w "${TTY:-}" ]]; then
+    printf '%s' "$TTY"
+    return
+  fi
+
+  cand=$(tty 2>/dev/null || true)
+  if [[ -n "$cand" && "$cand" != "not a tty" && -w "$cand" ]]; then
+    printf '%s' "$cand"
+    return
+  fi
+
+  if command -v tmux >/dev/null 2>&1; then
+    if [[ -n "${TMUX_PANE:-}" ]]; then
+      cand=$(tmux display-message -p -t "${TMUX_PANE}" '#{pane_tty}' 2>/dev/null || true)
+      if [[ -n "$cand" && -w "$cand" ]]; then
+        printf '%s' "$cand"
+        return
+      fi
+    fi
+
+    cand=$(tmux display-message -p '#{client_tty}' 2>/dev/null || true)
+    if [[ -n "$cand" && -w "$cand" ]]; then
+      printf '%s' "$cand"
+      return
+    fi
+
+    cand=$(tmux list-clients -F '#{client_tty}' 2>/dev/null | head -n 1 || true)
+    if [[ -n "$cand" && -w "$cand" ]]; then
+      printf '%s' "$cand"
+      return
+    fi
+  fi
+}
+
 # Keep tmux buffer in sync (and trigger set-clipboard if enabled)
 copy_via_tmux() {
   if command -v tmux >/dev/null 2>&1 && [[ -n "${TMUX:-}" ]]; then
@@ -71,7 +108,8 @@ copy_via_osc52() {
     osc="\ePtmux;\e${osc}\e\\"
   fi
 
-  local tty_target=${TTY:-$(tty 2>/dev/null || true)}
+  local tty_target
+  tty_target=$(resolve_tty || true)
   if [[ -n "$tty_target" && -w "$tty_target" ]]; then
     printf '%b' "$osc" > "$tty_target"
   else
