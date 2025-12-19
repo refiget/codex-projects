@@ -8,7 +8,7 @@
 
 ## tmux（mac 前缀 C-s，服务器 C-b）
 - 状态栏：脚本位于 `tmux/tmux-status/left.sh|right.sh`，右侧显示时间（块保留，去掉箭头），可选 rainbarf；pane 顶栏用 starship 显示路径+git。
-- 复制：`M-v` 进入 copy-mode，`y` 复制到系统剪贴板；`C-S-v`/`M-V` 粘贴系统剪贴板（OSC52）。
+- 复制：`M-v` 进入 copy-mode，`y` 复制 tmux buffer，`Y` 复制系统剪贴板（OSC52 支持 SSH 回传）；`C-S-v`/`M-V` 粘贴系统剪贴板。
 - 窗口/会话：`C-p/C-n` 切窗口；`M-1..9` 直达窗口；`C-1..9`/F1..F5 切会话；`M-o` 新窗口同路径，`M-O` 拆窗格成新窗口。
 - 分屏/移动：`h/j/k/l` 分割；`M-h/j/k/l` 移动 pane；`M-H/J/K/L` 调大小；`M-f` 缩放；`Space` 横竖切换。
 - 其他：`C-g` 切同步输入；`prefix + r` 重载配置。

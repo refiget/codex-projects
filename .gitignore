@@ -1,3 +1,6 @@
 ..gitconfig.un~
 ..tmux.conf.un~
 ..zshrc.un~
+*.un~
+..gitignore.un~
+..gitignore.un~

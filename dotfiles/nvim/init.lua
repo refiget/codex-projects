@@ -71,9 +71,6 @@ end, { silent = true, noremap = true, expr = true })
 vim.keymap.set("i", "<S-Tab>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]],
   { silent = true, noremap = true, expr = true })
 
-vim.keymap.set("i", "<CR>", [[coc#pum#visible() ? coc#pum#confirm() : "\<CR>"]],
-  { silent = true, noremap = true, expr = true })
-
 vim.keymap.set("i", "<C-Space>", "coc#refresh()", { silent = true, noremap = true, expr = true })
 
 
