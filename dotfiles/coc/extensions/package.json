@@ -6,6 +6,7 @@
     "coc-pyright": ">=1.1.405",
     "coc-snippets": ">=3.4.7",
     "coc-explorer": ">=0.27.3",
-    "coc-sh": ">=1.2.4"
+    "coc-sh": ">=1.2.4",
+    "coc-lua": ">=0.0.32"
   }
 }

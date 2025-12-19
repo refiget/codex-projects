@@ -3,10 +3,6 @@
 -- y 走默认寄存器，Y 由按键映射复制到 + 寄存器。
 vim.opt.clipboard = ""
 
-local function is_ssh()
-  return vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
-end
-
 -- 纯 Lua base64，避免额外依赖
 local function base64_encode(data)
   local b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -67,7 +63,23 @@ end
 local copy = first_exec({ "~/.config/tmux/scripts/copy_to_clipboard.sh", "~/dotfiles/tmux/scripts/copy_to_clipboard.sh" })
 local paste = first_exec({ "~/.config/tmux/scripts/paste_from_clipboard.sh", "~/dotfiles/tmux/scripts/paste_from_clipboard.sh" })
 
-if copy and paste then
+local has_builtin_osc52 = vim.ui and vim.ui.clipboard and vim.ui.clipboard.osc52
+
+if has_builtin_osc52 then
+  -- 优先使用 Neovim 内置 OSC52 提供者（0.10+），终端需支持 OSC52
+  vim.g.clipboard = {
+    name = "osc52",
+    copy = {
+      ["+"] = vim.ui.clipboard.osc52.copy("+"),
+      ["*"] = vim.ui.clipboard.osc52.copy("*"),
+    },
+    paste = {
+      ["+"] = vim.ui.clipboard.osc52.paste("+"),
+      ["*"] = vim.ui.clipboard.osc52.paste("*"),
+    },
+    cache_enabled = 0,
+  }
+elseif copy and paste then
   vim.g.clipboard = {
     name = "tmux-osc52",
     copy = { ["+"] = copy, ["*"] = copy },
